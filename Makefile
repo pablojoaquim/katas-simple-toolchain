@@ -1,8 +1,10 @@
 # ===============================
 # Makefile for Windows + MinGW
 # ===============================
+CC  = gcc
 CXX = g++
-CFLAGS = -Wall -Wextra -std=c++17
+CFLAGS   = -Wall -Wextra -std=c11
+CXXFLAGS = -Wall -Wextra -std=c++17
 
 # ===============================
 # Detect OS
@@ -37,8 +39,10 @@ TEST_DIRS := $(subst \,/,$(TEST_DIRS))
 # Search for all the .c inside 
 # the src directories
 # ===============================
-SRC_FILES  = $(foreach d,$(SRC_DIRS),$(wildcard $(d)/*.cpp))
-TEST_FILES = $(foreach d,$(TEST_DIRS),$(wildcard $(d)/test_*.cpp))
+C_SRC_FILES   	= $(foreach d,$(SRC_DIRS),$(wildcard $(d)/*.c))
+CPP_SRC_FILES	= $(foreach d,$(SRC_DIRS),$(wildcard $(d)/*.cpp))
+C_TEST_FILES 	= $(foreach d,$(TEST_DIRS),$(wildcard $(d)/test_*.c))
+CPP_TEST_FILES 	= $(foreach d,$(TEST_DIRS),$(wildcard $(d)/test_*.cpp))
 
 # ===============================
 # Automatic Includes
@@ -55,8 +59,13 @@ TEST_TARGET  = $(BUILD_DIR)/tests$(EXE_EXT)
 # ===============================
 # Object files
 # ===============================
-OBJ_SRC  = $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES))
-OBJ_TEST = $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(TEST_FILES))
+OBJ_C_SRC	= $(patsubst %.c,$(OBJ_DIR)/%.o,$(C_SRC_FILES))
+OBJ_CPP_SRC = $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(CPP_SRC_FILES))
+OBJ_C_TEST 	= $(patsubst %.c,$(OBJ_DIR)/%.o,$(C_TEST_FILES))
+OBJ_CPP_TEST= $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(CPP_TEST_FILES))
+
+OBJ_ALL = $(OBJ_C_SRC) $(OBJ_CPP_SRC)
+OBJ_ALL_TEST = $(OBJ_C_TEST) $(OBJ_CPP_TEST)
 
 # ===============================
 # Create directories automatically
@@ -81,20 +90,26 @@ COVERAGE_DIR  = $(BUILD_DIR)/coverage
 # =================================
 all: .dirs $(TARGET)
 
-$(TARGET): $(OBJ_SRC)
-	$(CXX) $(CXXFLAGS) $(OBJ_SRC) -o $(TARGET)
+# Link with C++ to avoid unresolved C++ symbols
+$(TARGET): $(OBJ_ALL)
+	$(CXX) $(CXXFLAGS) $(OBJ_ALL) -o $(TARGET)
 	@echo ==== Compilation completed: $(TARGET) ====
 
+# Compile C files
+$(OBJ_DIR)/%.o: %.c | .dirs
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# Compile C++ files
 $(OBJ_DIR)/%.o: %.cpp | .dirs
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # =================================
 # Build tests (no main.cpp)
 # =================================
-tests: .dirs $(OBJ_SRC) $(OBJ_TEST)
+tests: .dirs $(OBJ_ALL) $(OBJ_ALL_TEST)
 	$(CXX) $(CXXFLAGS) \
-		$(filter-out $(OBJ_DIR)/$(MAIN:.cpp=.o),$(OBJ_SRC)) \
-		$(OBJ_TEST) -o $(TEST_TARGET)
+		$(filter-out $(OBJ_DIR)/$(MAIN:.cpp=.o),$(OBJ_ALL)) \
+		$(OBJ_ALL_TEST) -o $(TEST_TARGET)
 	@echo ==== Tests built: $(TEST_TARGET) ====
 
 # =================================

@@ -34,6 +34,7 @@
 #include <iostream>
 #include <memory>
 #include "person.h"
+#include "animal.h"
 
 /*===========================================================================*
  * Local Preprocessor #define Constants
@@ -158,6 +159,8 @@ T myMax(T a, T b) {
 int main(int argc, char* argv[]) {
     std::cout << "=== " << argv[0] << " ===" << std::endl;
 
+    Dog_Walk();
+    
     // if (argc > 1) {
     //     std::cout << "Argumentos recibidos:" << std::endl;
     //     for (int i = 1; i < argc; ++i) {
