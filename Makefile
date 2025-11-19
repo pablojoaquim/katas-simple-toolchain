@@ -10,15 +10,9 @@ CXXFLAGS = -Wall -Wextra -std=c++17
 # Detect OS
 # ===============================
 ifeq ($(OS),Windows_NT)
-    RM = del /Q
-	RMDIR = rm /S /Q
-    EXE_EXT = .exe
-	MKDIR = mkdir
+    EXE_EXT	= .exe
 else
-    RM = rm -f
-	RMDIR = rm -rf
     EXE_EXT =
-    MKDIR = mkdir -p
 endif
 
 # ===============================
@@ -30,10 +24,22 @@ TEST_DIRS = test
 MAIN = src/main.cpp
 
 # ===============================
+# Other directories
+# ===============================
+BUILD_DIR     = build
+OBJ_DIR       = $(BUILD_DIR)/obj
+COVERAGE_DIR  = $(BUILD_DIR)/coverage
+
+# ===============================
 # Windows \ → /
 # ===============================
-SRC_DIRS := $(subst \,/,$(SRC_DIRS))
-TEST_DIRS := $(subst \,/,$(TEST_DIRS))
+ifeq ($(OS),Windows_NT)
+	SRC_DIRS  := $(subst /,\,$(SRC_DIRS))
+	TEST_DIRS := $(subst /,\,$(TEST_DIRS))
+	BUILD_DIR := $(subst /,\,$(BUILD_DIR))
+	OBJ_DIR   := $(subst /,\,$(OBJ_DIR))
+	COVERAGE_DIR := $(subst /,\,$(COVERAGE_DIR))
+endif
 
 # ===============================
 # Search for all the .c inside 
@@ -70,20 +76,24 @@ OBJ_ALL_TEST = $(OBJ_C_TEST) $(OBJ_CPP_TEST)
 # ===============================
 # Create directories automatically
 # ===============================
-BUILD_DIR     = build
-OBJ_DIR       = $(BUILD_DIR)/obj
-COVERAGE_DIR  = $(BUILD_DIR)/coverage
 
 # Ensure build dirs exist before compiling
 .dirs:
-	$(MKDIR) $(BUILD_DIR)
-	$(MKDIR) $(OBJ_DIR)
+ifeq ($(OS),Windows_NT)
+	if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
+	if not exist $(OBJ_DIR) mkdir $(OBJ_DIR)
+	for %%d in ($(SRC_DIRS)) do if not exist "$(OBJ_DIR)\%%d" mkdir "$(OBJ_DIR)\%%d"
+	for %%d in ($(TEST_DIRS)) do if not exist "$(OBJ_DIR)\%%d" mkdir "$(OBJ_DIR)\%%d"
+else
+	mkdir -p $(BUILD_DIR)
+	mkdir -p $(OBJ_DIR)
 	@for d in $(SRC_DIRS); do \
-		$(MKDIR) "$(OBJ_DIR)/$$d"; \
+		mkdir -p "$(OBJ_DIR)/$$d"; \
 	done
 	@for d in $(TEST_DIRS); do \
-		$(MKDIR) "$(OBJ_DIR)/$$d"; \
+		mkdir -p "$(OBJ_DIR)/$$d"; \
 	done
+endif
 
 # =================================
 # Build rules
@@ -122,21 +132,32 @@ run-tests: tests
 # ===============================
 # Valgrind (Linux only)
 # ===============================
-valgrind: tests
+valgrind: 
+ifeq ($(OS),Windows_NT)
+	@echo Valgrind is not available on Windows
+else
 	@echo ==== Running under Valgrind ====
+	$(MAKE) tests
 	valgrind --leak-check=full ./$(TEST_TARGET)
+endif
 
 # ===============================
 # Coverage (gcov + gcovr)
 # ===============================
 coverage:
 	@echo ==== Generating coverage ====
+ifeq ($(OS),Windows_NT)
 	$(MAKE) clean
-	$(MKDIR) $(COVERAGE_DIR)
+	if not exist $(COVERAGE_DIR) mkdir $(COVERAGE_DIR)
+	$(MAKE) CXXFLAGS="$(CXXFLAGS) -fprofile-arcs -ftest-coverage" tests
+	./$(TEST_TARGET)
+else
+	$(MAKE) clean
+	mkdir -p $(COVERAGE_DIR)
 	$(MAKE) CXXFLAGS="$(CXXFLAGS) -fprofile-arcs -ftest-coverage" tests
 	./$(TEST_TARGET)
 	gcovr --html-details --output $(COVERAGE_DIR)/coverage.html
-	@echo ==== Coverage report generated ====
+endif
 
 # =================================
 # Run main application
@@ -150,7 +171,8 @@ run: $(TARGET)
 # =================================
 clean:
 	@echo ==== Cleaning build directory ====
-	-$(RM) $(TARGET)
-	-$(RM) $(TEST_TARGET)
-	-$(RMDIR) $(BUILD_DIR)
-
+ifeq ($(OS),Windows_NT)
+	if exist $(BUILD_DIR) rmdir /S /Q $(BUILD_DIR)
+else
+	-rm -rf $(BUILD_DIR)
+endif
