@@ -1,18 +1,20 @@
 # ===============================
 # Makefile for Windows + MinGW
 # ===============================
-CC = gcc
-CFLAGS = -Wall -Wextra -std=c11
+CXX = g++
+CFLAGS = -Wall -Wextra -std=c++17
 
 # ===============================
 # Detect OS
 # ===============================
 ifeq ($(OS),Windows_NT)
     RM = del /Q
+	RMDIR = rm /S /Q
     EXE_EXT = .exe
 	MKDIR = mkdir
 else
     RM = rm -f
+	RMDIR = rm -rf
     EXE_EXT =
     MKDIR = mkdir -p
 endif
@@ -23,7 +25,7 @@ endif
 # ===============================
 SRC_DIRS  = src
 TEST_DIRS = test
-MAIN = src/main.c
+MAIN = src/main.cpp
 
 # ===============================
 # Windows \ → /
@@ -35,8 +37,8 @@ TEST_DIRS := $(subst \,/,$(TEST_DIRS))
 # Search for all the .c inside 
 # the src directories
 # ===============================
-SRC_FILES  = $(foreach d,$(SRC_DIRS),$(wildcard $(d)/*.c))
-TEST_FILES = $(foreach d,$(TEST_DIRS),$(wildcard $(d)/test_*.c))
+SRC_FILES  = $(foreach d,$(SRC_DIRS),$(wildcard $(d)/*.cpp))
+TEST_FILES = $(foreach d,$(TEST_DIRS),$(wildcard $(d)/test_*.cpp))
 
 # ===============================
 # Automatic Includes
@@ -53,8 +55,8 @@ TEST_TARGET  = $(BUILD_DIR)/tests$(EXE_EXT)
 # ===============================
 # Object files
 # ===============================
-OBJ_SRC  = $(patsubst %.c,$(OBJ_DIR)/%.o,$(SRC_FILES))
-OBJ_TEST = $(patsubst %.c,$(OBJ_DIR)/%.o,$(TEST_FILES))
+OBJ_SRC  = $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES))
+OBJ_TEST = $(patsubst %.cpp,$(OBJ_DIR)/%.o,$(TEST_FILES))
 
 # ===============================
 # Create directories automatically
@@ -80,18 +82,18 @@ COVERAGE_DIR  = $(BUILD_DIR)/coverage
 all: .dirs $(TARGET)
 
 $(TARGET): $(OBJ_SRC)
-	$(CC) $(CFLAGS) $(OBJ_SRC) -o $(TARGET)
+	$(CXX) $(CXXFLAGS) $(OBJ_SRC) -o $(TARGET)
 	@echo ==== Compilation completed: $(TARGET) ====
 
-$(OBJ_DIR)/%.o: %.c | dirs
-	$(CC) $(CFLAGS) -c $< -o $@
+$(OBJ_DIR)/%.o: %.cpp | .dirs
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # =================================
 # Build tests (no main.cpp)
 # =================================
 tests: .dirs $(OBJ_SRC) $(OBJ_TEST)
-	$(CC) $(CFLAGS) \
-		$(filter-out $(OBJ_DIR)/$(MAIN:.c=.o),$(OBJ_SRC)) \
+	$(CXX) $(CXXFLAGS) \
+		$(filter-out $(OBJ_DIR)/$(MAIN:.cpp=.o),$(OBJ_SRC)) \
 		$(OBJ_TEST) -o $(TEST_TARGET)
 	@echo ==== Tests built: $(TEST_TARGET) ====
 
@@ -115,6 +117,7 @@ valgrind: tests
 coverage:
 	@echo ==== Generating coverage ====
 	$(MAKE) clean
+	$(MKDIR) $(COVERAGE_DIR)
 	$(MAKE) CXXFLAGS="$(CXXFLAGS) -fprofile-arcs -ftest-coverage" tests
 	./$(TEST_TARGET)
 	gcovr --html-details --output $(COVERAGE_DIR)/coverage.html
@@ -134,8 +137,5 @@ clean:
 	@echo ==== Cleaning build directory ====
 	-$(RM) $(TARGET)
 	-$(RM) $(TEST_TARGET)
-	-$(RM) $(BUILD_DIR)$(PATHSEP)*.gcno
-	-$(RM) $(BUILD_DIR)$(PATHSEP)*.gcda
-	-$(RM) $(BUILD_DIR)$(PATHSEP)*.gcov
-	-$(RM) $(OBJ_DIR)$(PATHSEP)*.o
+	-$(RMDIR) $(BUILD_DIR)
 
