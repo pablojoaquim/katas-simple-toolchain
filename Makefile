@@ -29,6 +29,7 @@ MAIN = src/main.cpp
 BUILD_DIR     = build
 OBJ_DIR       = $(BUILD_DIR)/obj
 COVERAGE_DIR  = $(BUILD_DIR)/coverage
+CPPCHECK_DIR  = $(BUILD_DIR)/cppcheck
 
 # ===============================
 # Windows \ → /
@@ -39,6 +40,7 @@ ifeq ($(OS),Windows_NT)
 	BUILD_DIR := $(subst /,\,$(BUILD_DIR))
 	OBJ_DIR   := $(subst /,\,$(OBJ_DIR))
 	COVERAGE_DIR := $(subst /,\,$(COVERAGE_DIR))
+	CPPCHECK_DIR := $(subst /,\,$(CPPCHECK_DIR))
 endif
 
 # ===============================
@@ -158,6 +160,33 @@ else
 	./$(TEST_TARGET)
 	gcovr --html-details --output $(COVERAGE_DIR)/coverage.html
 endif
+
+# ===============================
+# Cppcheck (Static Analysis)
+# ===============================
+cppcheck:
+	@echo ==== Running Cppcheck ====
+ifeq ($(OS),Windows_NT)
+	@echo Cppcheck build option has not yet tested on Windows
+else
+	mkdir -p $(CPPCHECK_DIR)
+endif
+	cppcheck $(CPPCHECK_OPTS) $(SRC_DIRS) \
+		--enable=all --inconclusive --std=c11 --std=c++17 \
+        --inline-suppr --force \
+		--suppress=missingIncludeSystem \
+		--check-level=exhaustive \
+		--addon=tools/cppcheck/misra.json \
+		--cppcheck-build-dir=$(CPPCHECK_DIR) \
+		--xml --xml-version=2 \
+		--checkers-report=$(CPPCHECK_DIR)/checkers.txt \
+		--output-file=$(CPPCHECK_DIR)/cppcheck-result.xml
+	@echo ==== Cppcheck finished. Report in $(CPPCHECK_DIR)/cppcheck-result.xml ====
+	@echo ==== Generating HTML Report ====
+	cppcheck-htmlreport \
+		--file=$(CPPCHECK_DIR)/cppcheck-result.xml \
+		--report-dir=$(CPPCHECK_DIR)/html
+	@echo ==== HTML report ready in $(CPPCHECK_DIR)/html ====
 
 # =================================
 # Run main application
