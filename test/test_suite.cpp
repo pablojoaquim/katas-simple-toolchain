@@ -1,7 +1,10 @@
 /*===========================================================================*/
 /**
- * @file test_suite.c
+ * @file test_suite.cpp
  *
+ *------------------------------------------------------------------------------
+ * Copyright (c) 2025 - Pablo Joaquim
+ * MIT License: https://opensource.org/licenses/MIT
  *------------------------------------------------------------------------------
  *
  * @section DESC DESCRIPTION:
@@ -30,9 +33,8 @@
  *===========================================================================*/
 #include <iostream>
 #include <memory>
-#include "person.h"
-#include "animal.h"
 #include "acutest.h"
+#include "katas.h"
 
 /*===========================================================================*
  * Local Preprocessor #define Constants
@@ -59,38 +61,80 @@
  *===========================================================================*/
 
 /*===========================================================================*
- * Function Definitions
+ * Test cases
  *===========================================================================*/
+#include "acutest.h"
+#include <string.h>
+#include <string>
+#include "katas.h"
 
-/***************************************************************************//**
-* @fn         test_person
-* @brief      Several tests
-* @param [in] void
-* @return     void
-******************************************************************************/
-void test_person(void) {
-    Person p1("Alice", 30);
-    Person p2("Bob", 25);
-
-    TEST_CHECK(p1.greet() == 0);
-    TEST_CHECK(p2.greet() == 0);
+void test_SomeTest(void)
+{
+    TEST_CHECK(strcmp(highAndLow("4 5 29 54 4 0 -214 542 -64 1 -3 6 -6").c_str(),
+                      "542 -214") == 0);
 }
 
-/***************************************************************************//**
-* @fn         test_animal
-* @brief      Several tests
-* @param [in] void
-* @return     void
-******************************************************************************/
-void test_animal(void) {
-    TEST_CHECK(Dog_Walk() == 0);
+void test_SortTest(void)
+{
+    TEST_CHECK(strcmp(highAndLow("10 2 -1 -20").c_str(),
+                      "10 -20") == 0);
 }
 
-/***************************************************************************//**
-* The tests list
-******************************************************************************/
+void test_PlusMinusTest(void)
+{
+    TEST_CHECK(strcmp(highAndLow("1 -1").c_str(),
+                      "1 -1") == 0);
+}
+
+void test_PlusPlusTest(void)
+{
+    TEST_CHECK(strcmp(highAndLow("1 1").c_str(),
+                      "1 1") == 0);
+}
+
+void test_MinusMinusTest(void)
+{
+    TEST_CHECK(strcmp(highAndLow("-1 -1").c_str(),
+                      "-1 -1") == 0);
+}
+
+void test_PlusMinusZeroTest(void)
+{
+    TEST_CHECK(strcmp(highAndLow("1 -1 0").c_str(),
+                      "1 -1") == 0);
+}
+
+void test_PlusPlusZeroTest(void)
+{
+    TEST_CHECK(strcmp(highAndLow("1 1 0").c_str(),
+                      "1 0") == 0);
+}
+
+void test_MinusMinusZeroTest(void)
+{
+    TEST_CHECK(strcmp(highAndLow("-1 -1 0").c_str(),
+                      "0 -1") == 0);
+}
+
+void test_SingleTest(void)
+{
+    TEST_CHECK(strcmp(highAndLow("42").c_str(),
+                      "42 42") == 0);
+}
+
+
+/*===========================================================================*
+ * Test list
+ *===========================================================================*/
 TEST_LIST = {
-    { "Testing something basic 1", test_person },
-    { "Testing something basic 2", test_animal },
-    { NULL, NULL }  // terminador
+    { "SomeTest", test_SomeTest },
+    { "SortTest", test_SortTest },
+    { "PlusMinusTest", test_PlusMinusTest },
+    { "PlusPlusTest", test_PlusPlusTest },
+    { "MinusMinusTest", test_MinusMinusTest },
+    { "PlusMinusZeroTest", test_PlusMinusZeroTest },
+    { "PlusPlusZeroTest", test_PlusPlusZeroTest },
+    { "MinusMinusZeroTest", test_MinusMinusZeroTest },
+    { "SingleTest", test_SingleTest },
+    { NULL, NULL }
 };

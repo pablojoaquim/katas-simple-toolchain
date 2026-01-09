@@ -19,7 +19,7 @@ endif
 # Source directories
 # EDIT ONLY HERE!!!!!!!!!!!
 # ===============================
-SRC_DIRS  = src
+SRC_DIRS  = src utils
 TEST_DIRS = test
 MAIN = src/main.cpp
 

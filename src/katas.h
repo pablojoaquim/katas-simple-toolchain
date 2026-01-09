@@ -1,13 +1,16 @@
-#ifndef ANIMAL_H
-#define ANIMAL_H
+#ifndef KATAS_H
+#define KATAS_H
 
 /*===========================================================================*/
 /**
- * @file animal.h
+ * @file kata.h
  *
  *------------------------------------------------------------------------------
+ * Copyright (c) 2025 - Pablo Joaquim
+ * MIT License: https://opensource.org/licenses/MIT
+ *------------------------------------------------------------------------------
  *
- * @section DESC DESCRIPTION: API for the Animal module
+ * @section DESC DESCRIPTION: API for the Person module
  *
  * @todo Add full description here
  *
@@ -28,13 +31,18 @@
 /*==========================================================================*/
 
 /*===========================================================================*
- * Header Files
+ * Header Files (Common to C and C++)
  *===========================================================================*/
+#include <stdint.h>
+#include <stddef.h>
 
-#   ifdef __cplusplus
-extern "C"
-{ /* ! Inclusion of header files should NOT be inside the extern "C" block */
-#   endif /* __cplusplus */
+#ifdef __cplusplus
+/*===========================================================================*
+ * Header Files (C++ only)
+ *===========================================================================*/
+#include <string>
+#endif
+
 /*===========================================================================*
  * Exported Preprocessor #define Constants
  *===========================================================================*/
@@ -48,17 +56,43 @@ extern "C"
  *===========================================================================*/
 
 /*===========================================================================*
- * Exported Classes
+ * Exported Classes (C++ only)
  *===========================================================================*/
+#ifdef __cplusplus
+// @todo: Add C++ class declarations here.
+#endif
 
 /*===========================================================================*
- * Exported Function Prototypes
+ * Exported C Function Prototypes
  *===========================================================================*/
-int Dog_Walk();
+#ifdef __cplusplus
+extern "C" {
+#endif
+// @todo: Add pure C function prototypes here.
 
-#   ifdef __cplusplus
-}         /* extern "C" */
-#   endif /* __cplusplus */
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+ /*===========================================================================*
+ * Exported C++ Function Prototypes
+ *===========================================================================*/
+#ifdef __cplusplus
+// @todo: Add pure C++ function prototypes here.
+
+/*****************************************************************************
+ * @fn         move_zeros
+ * @brief      Takes an array and moves all of the zeros to the end, 
+ *             preserving the order of the other elements.
+ *             int [] {1, 2, 0, 1, 0, 1, 0, 3, 0, 1}) -> int [] {1, 2, 1, 1, 3, 1, 0, 0, 0, 0}
+ * @param [in] len - The length of the received array
+ * @param [in] arr - The input array
+ * @return     None
+ ******************************************************************************/
+void move_zeros(size_t len, int* arr);
+
+#endif /* __cplusplus */
+
 /*===========================================================================*/
 /*===========================================================================*/
-#endif /* ANIMAL_H */
+#endif /* KATAS_H */
